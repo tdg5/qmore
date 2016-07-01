@@ -17,7 +17,7 @@ describe "Attributes" do
     end
 
     it "can specify simple wildcard" do
-      worker = Qless::Worker.new("*")
+      worker = Qless::Workers::BaseWorker.new("*")
       expect(expand_queues(["*"], @real_queues)).to(eq(["foo", "high_x", "high_y", "superhigh_z"]))
     end
 
