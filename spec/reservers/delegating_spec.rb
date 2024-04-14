@@ -2,14 +2,14 @@ require "spec_helper"
 
 describe 'Reservers::Delegating' do
   before(:each) do
-    Redis.connect(:port => 6380).flushall
+    Redis.new(:port => 6380).flushall
     Qmore.client.redis.flushall
     Qmore.configuration = Qmore::Configuration.new
   end
 
   it 'should implement #queues' do
-    qless1 = Qless::Client.new(:redis => Redis.connect(:port => 6379))
-    qless2 = Qless::Client.new(:redis => Redis.connect(:port => 6380))
+    qless1 = Qless::Client.new(:redis => Redis.new(:port => 6379))
+    qless2 = Qless::Client.new(:redis => Redis.new(:port => 6380))
     queue_a = qless1.queues["a"]
     queue_b = qless2.queues["b"]
 
@@ -31,8 +31,8 @@ describe 'Reservers::Delegating' do
   end
 
   it 'can delegate to multiple reservers' do
-    qless1 = Qless::Client.new(:redis => Redis.connect(:port => 6379))
-    qless2 = Qless::Client.new(:redis => Redis.connect(:port => 6380))
+    qless1 = Qless::Client.new(:redis => Redis.new(:port => 6379))
+    qless2 = Qless::Client.new(:redis => Redis.new(:port => 6380))
     queue_a = qless1.queues["a"]
     queue_b = qless2.queues["b"]
 
@@ -52,8 +52,8 @@ describe 'Reservers::Delegating' do
 
   context 'with ordering' do
     it 'should work with ordering strategy' do
-      qless1 = Qless::Client.new(:redis => Redis.connect(:port => 6379))
-      qless2 = Qless::Client.new(:redis => Redis.connect(:port => 6380))
+      qless1 = Qless::Client.new(:redis => Redis.new(:port => 6379))
+      qless2 = Qless::Client.new(:redis => Redis.new(:port => 6380))
       queue_a = qless1.queues["a"]
       queue_b = qless2.queues["b"]
 
