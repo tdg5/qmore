@@ -1,7 +1,6 @@
-source "http://rubygems.org"
+source 'http://rubygems.org'
 
-# Specify your gem's dependencies in qmore.gemspec
 gemspec
 
-# for code coverage during travis-ci test runs
-gem 'coveralls', :require => false
+gem 'qless', :branch => 'main', :git => 'https://github.com/tdg5/qless-rb.git', :submodules => true
+gem 'sinatra', '~> 1.4.7'
