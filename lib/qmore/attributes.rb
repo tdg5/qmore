@@ -1,5 +1,3 @@
-require 'multi_json'
-
 module Qmore
   module Attributes
     extend self
