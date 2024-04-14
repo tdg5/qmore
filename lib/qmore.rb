@@ -1,6 +1,5 @@
 require 'qless'
 require 'qless/worker'
-require 'gem_logger'
 require 'qmore/configuration'
 require 'qmore/persistence'
 require 'qmore/attributes'

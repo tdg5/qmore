@@ -1,15 +1,20 @@
+require 'logger'
+
 module Qmore::Persistence
   class Monitor
-    include GemLogger::LoggerSupport
-
     attr_reader :updating, :interval
     # @param [Qmore::persistence] persistence - responsible for reading the configuration
     # from some source (redis, file, db, etc)
     # @param [Integer] interval - the period, in seconds, to wait between updates to the configuration.
     # defaults to 1 minute
-    def initialize(persistence, interval)
+    def initialize(persistence, interval, logger = nil)
       @persistence = persistence
       @interval = interval
+      @logger = logger || (
+        logger = Logger.new(STDOUT)
+        logger.level = Logger::WARN
+        logger
+      )
     end
 
     def start
@@ -26,7 +31,7 @@ module Qmore::Persistence
           begin
             Qmore.configuration = @persistence.load
           rescue => e
-            logger.error "#{e.class.name} : #{e.message}"
+            @logger.error "#{e.class.name} : #{e.message}"
           end
         end
       end

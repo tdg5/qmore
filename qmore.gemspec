@@ -21,8 +21,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
 
   s.add_dependency("qless", '~> 0.9')
-  s.add_dependency("multi_json", '~> 1.7')
-  s.add_dependency("gem_logger")
+  s.add_dependency("multi_json", '~> 1.15')
 
   s.add_development_dependency('rake')
   s.add_development_dependency('rspec')
@@ -30,6 +29,4 @@ Gem::Specification.new do |s|
   s.add_development_dependency('pry')
   # Needed for correct ordering when passing hash params to rack-test
   s.add_development_dependency('orderedhash')
-
 end
-
