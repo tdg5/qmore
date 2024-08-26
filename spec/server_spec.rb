@@ -14,7 +14,7 @@ describe "Qmore Server" do
   include Qmore::Attributes
 
   def app
-    @app ||= Qless::Server.new(Qmore.client)
+    @app ||= Reqless::Server.new(Qmore.client)
   end
 
   before(:each) do

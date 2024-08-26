@@ -1,5 +1,5 @@
 module Qmore::Reservers
-  # @param [Enumerable] queues - qless queues to check for work
+  # @param [Enumerable] queues - reqless queues to check for work
   class Default < Struct.new(:queues)
     def description
       @description ||= queues.collect(&:name).uniq.join(', ') + " (qmore)"

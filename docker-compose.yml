@@ -1,0 +1,16 @@
+services:
+  redis:
+    image: redis:7.2.4
+    ports:
+      - "6379:6379"
+    restart: "no"
+    volumes:
+      - ./docker_data/redis:/var/lib/redis
+
+  redis2:
+    image: redis:7.2.4
+    ports:
+      - "6380:6379"
+    restart: "no"
+    volumes:
+      - ./docker_data/redis2:/var/lib/redis

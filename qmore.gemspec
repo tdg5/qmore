@@ -10,8 +10,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Matt Conway"]
   s.email       = ["matt@conwaysplace.com"]
   s.homepage    = ""
-  s.summary     = %q{A qless plugin that gives more control over how queues are processed}
-  s.description = %q{Qmore allows one to specify the queues a worker processes by the use of wildcards, negations, or dynamic look up from redis.  It also allows one to specify the relative priority between queues (rather than within a single queue).  It plugs into the Qless webapp to make it easy to manage the queues.}
+  s.summary     = %q{A reqless plugin that gives more control over how queues are processed}
+  s.description = %q{Qmore allows one to specify the queues a worker processes by the use of wildcards, negations, or dynamic look up from redis.  It also allows one to specify the relative priority between queues (rather than within a single queue).  It plugs into the Reqless webapp to make it easy to manage the queues.}
 
   s.rubyforge_project = "qmore"
 
@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency("qless", '~> 0.9')
+  s.add_dependency("reqless", '~> 0.0.2')
   s.add_dependency("multi_json", '~> 1.15')
 
   s.add_development_dependency('rake')

@@ -8,10 +8,10 @@ describe 'Reservers::Delegating' do
   end
 
   it 'should implement #queues' do
-    qless1 = Qless::Client.new(:redis => Redis.new(:port => 6379))
-    qless2 = Qless::Client.new(:redis => Redis.new(:port => 6380))
-    queue_a = qless1.queues["a"]
-    queue_b = qless2.queues["b"]
+    reqless1 = Reqless::Client.new(:redis => Redis.new(:port => 6379))
+    reqless2 = Reqless::Client.new(:redis => Redis.new(:port => 6380))
+    queue_a = reqless1.queues["a"]
+    queue_b = reqless2.queues["b"]
 
     job1 = queue_a.put(SomeJob, {})
     job2 = queue_b.put(SomeJob, {})
@@ -31,10 +31,10 @@ describe 'Reservers::Delegating' do
   end
 
   it 'can delegate to multiple reservers' do
-    qless1 = Qless::Client.new(:redis => Redis.new(:port => 6379))
-    qless2 = Qless::Client.new(:redis => Redis.new(:port => 6380))
-    queue_a = qless1.queues["a"]
-    queue_b = qless2.queues["b"]
+    reqless1 = Reqless::Client.new(:redis => Redis.new(:port => 6379))
+    reqless2 = Reqless::Client.new(:redis => Redis.new(:port => 6380))
+    queue_a = reqless1.queues["a"]
+    queue_b = reqless2.queues["b"]
 
     job1 = queue_a.put(SomeJob, {})
     job2 = queue_b.put(SomeJob, {})
@@ -52,10 +52,10 @@ describe 'Reservers::Delegating' do
 
   context 'with ordering' do
     it 'should work with ordering strategy' do
-      qless1 = Qless::Client.new(:redis => Redis.new(:port => 6379))
-      qless2 = Qless::Client.new(:redis => Redis.new(:port => 6380))
-      queue_a = qless1.queues["a"]
-      queue_b = qless2.queues["b"]
+      reqless1 = Reqless::Client.new(:redis => Redis.new(:port => 6379))
+      reqless2 = Reqless::Client.new(:redis => Redis.new(:port => 6380))
+      queue_a = reqless1.queues["a"]
+      queue_b = reqless2.queues["b"]
 
       job1 = queue_a.put(SomeJob, {})
       job2 = queue_b.put(SomeJob, {})

@@ -6,7 +6,7 @@ describe "Reservers::Strategies::Filtering" do
     Qmore.configuration = Qmore::Configuration.new
   end
 
-  context "default qless filtering behavior" do
+  context "default reqless filtering behavior" do
     it "can filter multiple queues" do
       high_queue = Qmore.client.queues['high']
       critical_queue = Qmore.client.queues['critical']

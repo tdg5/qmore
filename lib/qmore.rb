@@ -1,5 +1,5 @@
-require 'qless'
-require 'qless/worker'
+require 'reqless'
+require 'reqless/worker'
 require 'qmore/configuration'
 require 'qmore/persistence'
 require 'qmore/attributes'
@@ -11,7 +11,7 @@ module Qmore
   end
 
   def self.client
-    @client ||= Qless::Client.new
+    @client ||= Reqless::Client.new
   end
 
   def self.configuration
@@ -39,7 +39,7 @@ module Qmore
   end
 end
 
-module Qless
+module Reqless
   module JobReservers
     QmoreReserver = Qmore::Reservers::Default
   end

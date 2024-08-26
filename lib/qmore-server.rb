@@ -1,5 +1,5 @@
 require 'qmore'
-require 'qless/server'
+require 'reqless/server'
 require 'qmore/server'
 
-Qless::Server.register Qmore::Server
+Reqless::Server.register Qmore::Server
