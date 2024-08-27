@@ -23,7 +23,7 @@ module Qmore
   end
 
   def self.persistence
-    @persistence ||= Qmore::Persistence::Redis.new(self.client.redis)
+    @persistence ||= Qmore::Persistence::Reqless.new(self.client)
   end
 
   def self.persistence=(manager)

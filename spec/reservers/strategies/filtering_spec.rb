@@ -1,4 +1,5 @@
 require "spec_helper"
+require 'reqless'
 
 describe "Reservers::Strategies::Filtering" do
   before(:each) do
@@ -38,9 +39,11 @@ describe "Reservers::Strategies::Filtering" do
     end
 
     it "handles priorities" do
-      Qmore.configuration.priority_buckets = [{'pattern' => 'foo*', 'fairly' => false},
-                            {'pattern' => 'default', 'fairly' => false},
-                            {'pattern' => 'bar', 'fairly' => true}]
+      Qmore.configuration.priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[foo*], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+        Reqless::QueuePriorityPattern.new(%w[bar], true),
+      ]
 
       queues = ['other', 'blah', 'foobie', 'bar', 'foo'].reduce([]) do |queues, q|
         queue = Qmore.client.queues[q]

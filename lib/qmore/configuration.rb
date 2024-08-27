@@ -1,3 +1,5 @@
+require 'reqless'
+
 module Qmore
   class Configuration
     DYNAMIC_FALLBACK_KEY = "default".freeze
@@ -21,7 +23,9 @@ module Qmore
 
     # @param [Array] priorities
     def priority_buckets=(priorities)
-      priorities << {'pattern' => 'default'} unless priorities.find {|b| b['pattern'] == 'default' }
+      unless priorities.find {|b| b.pattern == ['default'] }
+        priorities << Reqless::QueuePriorityPattern.new(['default'], false)
+      end
       @priority_buckets = priorities
     end
 
@@ -62,12 +66,12 @@ module Qmore
     end
 
     def priority_buckets
-      @configuration.priority_buckets = @persistence.read_priority_buckets
+      @configuration.priority_buckets = @persistence.get_queue_priority_patterns
       @configuration.priority_buckets
     end
 
     def dynamic_queues
-      @configuration.dynamic_queues = @persistence.read_dynamic_queues
+      @configuration.dynamic_queues = @persistence.get_queue_identifier_patterns
       @configuration.dynamic_queues
     end
   end

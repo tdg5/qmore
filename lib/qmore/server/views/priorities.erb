@@ -36,11 +36,11 @@
   {
     $("input[type=submit]").css({border:"3px orange solid"});
   }
-    
+
   jQuery(function($) {
     $("input").live("keypress", markDirty);
     $("input[type=checkbox]").live("click", markDirty);
-    
+
     $("a.add").live("click", function(e) {
       e.preventDefault();
       var $table = $("table.priorities");

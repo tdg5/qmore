@@ -1,4 +1,5 @@
 require "spec_helper"
+require 'reqless'
 
 describe "Attributes" do
   include Qmore::Attributes
@@ -92,72 +93,90 @@ describe "Attributes" do
 
   context "queue priorities" do
     it "should pick up all queues with default priority" do
-      priority_buckets = [{'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [Reqless::QueuePriorityPattern.new(%w[default], false)]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["high_x", "foo", "high_y", "superhigh_z"]))
     end
 
     it "should pick up all queues fairly" do
       # do a bunch to reduce likelyhood of random match causing test failure
       @real_queues = 50.times.collect { |i| "auto_#{i}" }
-      priority_buckets = [{'pattern' => 'default', 'fairly' => true}]
+      priority_buckets = [Reqless::QueuePriorityPattern.new(%w[default], true)]
       expect(prioritize_queues(priority_buckets, @real_queues)).not_to(eq(@real_queues.sort))
       expect(prioritize_queues(priority_buckets, @real_queues).sort).to(eq(@real_queues.sort))
     end
 
     it "should prioritize simple pattern" do
-      priority_buckets = [{'pattern' => 'superhigh_z', 'fairly' => false},
-                          {'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[superhigh_z], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["superhigh_z", "high_x", "foo", "high_y"]))
     end
 
     it "should prioritize multiple simple patterns" do
-      priority_buckets = [{'pattern' => 'superhigh_z', 'fairly' => false},
-                          {'pattern' => 'default', 'fairly' => false},
-                          {'pattern' => 'foo', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[superhigh_z], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+        Reqless::QueuePriorityPattern.new(%w[foo], false),
+      ]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["superhigh_z", "high_x", "high_y", "foo"]))
     end
 
     it "should prioritize simple wildcard pattern" do
-      priority_buckets = [{'pattern' => 'high*', 'fairly' => false},
-                          {'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[high*], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["high_x", "high_y", "foo", "superhigh_z"]))
     end
 
     it "should prioritize simple wildcard pattern with correct matching" do
-      priority_buckets = [{'pattern' => '*high*', 'fairly' => false},
-                          {'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[*high*], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["high_x", "high_y", "superhigh_z", "foo"]))
     end
 
     it "should prioritize negation patterns" do
       @real_queues.delete("high_x")
       @real_queues << "high_x"
-      priority_buckets = [{'pattern' => 'high*,!high_x', 'fairly' => false},
-                          {'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[high* !high_x], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["high_y", "foo", "superhigh_z", "high_x"]))
     end
 
     it "should not be affected by standalone negation patterns" do
-      priority_buckets = [{'pattern' => '!high_x', 'fairly' => false},
-                          {'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[!high_x], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["high_x", "foo", "high_y", "superhigh_z"]))
     end
 
     it "should allow multiple inclusive patterns" do
-      priority_buckets = [{'pattern' => 'high_x, superhigh*', 'fairly' => false},
-                          {'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[high_x superhigh*], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["high_x", "superhigh_z", "foo", "high_y"]))
     end
 
     it "should prioritize fully inclusive wildcard pattern" do
-      priority_buckets = [{'pattern' => '*high*', 'fairly' => false},
-                          {'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[*high*], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["high_x", "high_y", "superhigh_z", "foo"]))
     end
 
     it "should handle empty default match" do
-      priority_buckets = [{'pattern' => '*', 'fairly' => false},
-                          {'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[*], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       expect(prioritize_queues(priority_buckets, @real_queues)).to(eq(["high_x", "foo", "high_y", "superhigh_z"]))
     end
 
@@ -165,8 +184,10 @@ describe "Attributes" do
       others = 5.times.collect { |i| "other#{i}" }
       @real_queues = @real_queues + others
 
-      priority_buckets = [{'pattern' => 'other*', 'fairly' => true},
-                          {'pattern' => 'default', 'fairly' => false}]
+      priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[other*], true),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       queues = prioritize_queues(priority_buckets, @real_queues)
 
       expect(queues[0..4].sort).to eq(others.sort)

@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency("reqless", '~> 0.0.2')
+  s.add_dependency("reqless", '~> 0.0.3')
   s.add_dependency("multi_json", '~> 1.15')
 
   s.add_development_dependency('rake')

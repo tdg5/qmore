@@ -6,7 +6,7 @@ describe "Qmore::Persistence::Monitor" do
   end
 
   it "updates periodically based on the interval" do
-    persistence = Qmore::Persistence::Redis.new(Qmore.client.redis)
+    persistence = Qmore::Persistence::Reqless.new(Qmore.client)
     persistence.should_receive(:load).at_least(3)
     monitor = Qmore::Persistence::Monitor.new(persistence, 1)
     monitor.start
@@ -15,7 +15,7 @@ describe "Qmore::Persistence::Monitor" do
   end
 end
 
-describe "Qmore::Persistence::Redis" do
+describe "Qmore::Persistence::Reqless" do
   before(:each) do
     Qmore.client.redis.flushall
   end
@@ -31,7 +31,7 @@ describe "Qmore::Persistence::Redis" do
 
       configuration = Qmore::Configuration.new
       configuration.dynamic_queues = queues
-      persistence = Qmore::Persistence::Redis.new(Qmore.client.redis)
+      persistence = Qmore::Persistence::Reqless.new(Qmore.client)
       persistence.write(configuration)
 
       actual_configuration = persistence.load
@@ -42,11 +42,14 @@ describe "Qmore::Persistence::Redis" do
 
   context "priorities" do
     it "can read/write priorities to redis" do
-      priorities = [{'pattern' => 'foo*', 'fairly' => false},{'pattern' => 'default', 'fairly' => false}]
+      priorities = [
+        Reqless::QueuePriorityPattern.new(%w[foo*], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
       configuration = Qmore::Configuration.new
       configuration.priority_buckets = priorities
 
-      persistence = Qmore::Persistence::Redis.new(Qmore.client.redis)
+      persistence = Qmore::Persistence::Reqless.new(Qmore.client)
       persistence.write(configuration)
 
       actual_configuration = persistence.load

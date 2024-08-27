@@ -1,4 +1,5 @@
 require 'qmore'
+require 'reqless'
 
 module Qmore
   module Server
@@ -35,10 +36,7 @@ module Qmore
         @queues = []
         real_queues = Qmore.client.queues.counts.collect {|q| q['name'] }
 
-        # For the UI we always want the latest persisted data
-        configuration = Qmore.persistence.load
-
-        dqueues = configuration.dynamic_queues
+        dqueues = Qmore.persistence.get_queue_identifier_patterns
         dqueues.each do |k, v|
           expanded = Attr.expand_queues(["@#{k}"], real_queues)
           expanded = expanded.collect { |q| q.split(":").last }
@@ -66,21 +64,15 @@ module Qmore
       end
 
       app.post "/dynamicqueues" do
-        dynamic_queues = Array(params['queues'])
-        queues = {}
-        dynamic_queues.each do |queue|
-          key = queue['name']
+        queues = params['queues']
+        dynamic_queues = {}
+        queues.each do |queue|
           values = queue['value'].to_s.split(',').collect { |q| q.gsub(/\s/, '') }
-          queues[key] = values
+          dynamic_queues[queue['name']] = values
         end
 
-        # For the UI we always want the latest persisted data
-        configuration = Qmore.persistence.load
-        configuration.dynamic_queues = queues
-
-        Qmore.persistence.write(configuration)
-        Qmore.configuration.dynamic_queues = configuration.dynamic_queues
-
+        Qmore.configuration.dynamic_queues = dynamic_queues
+        Qmore.persistence.set_queue_identifier_patterns(dynamic_queues)
         redirect to("/dynamicqueues")
       end
 
@@ -90,21 +82,27 @@ module Qmore
 
       app.get "/queuepriority" do
         # For the UI we always want the latest persisted data
-        configuration = Qmore.persistence.load
-
-        @priorities = configuration.priority_buckets
+        @priorities = Qmore.persistence.get_queue_priority_patterns.map do |priority_pattern|
+          {
+            'fairly' => priority_pattern.should_distribute_fairly,
+            'pattern' => priority_pattern.pattern.join(', '),
+          }
+        end
         qmore_view :priorities
       end
 
       app.post "/queuepriority" do
         priorities = params['priorities']
-
-        # For the UI we always want the latest persisted data
-        configuration = Qmore.persistence.load
-        configuration.priority_buckets = priorities
-
-        Qmore.persistence.write(configuration)
-        Qmore.configuration.priority_buckets = configuration.priority_buckets
+        priority_patterns = priorities.map do |priority_pattern|
+          fairly = priority_pattern.fetch('fairly', 'false')
+          should_distribute_fairly = fairly == true || fairly == 'true'
+          Reqless::QueuePriorityPattern.new(
+            priority_pattern['pattern'].to_s.split(',').collect { |q| q.gsub(/\s/, '') },
+            should_distribute_fairly,
+          )
+        end
+        Qmore.configuration.priority_buckets = priority_patterns
+        Qmore.persistence.set_queue_priority_patterns(priority_patterns)
 
         redirect to("/queuepriority")
       end

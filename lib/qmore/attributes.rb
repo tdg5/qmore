@@ -64,11 +64,11 @@ module Qmore
 
       # Walk the priority patterns, extract each into its own bucket
       priority_buckets.each do |bucket|
-        bucket_pattern = bucket['pattern']
-        fairly = bucket['fairly']
+        bucket_pattern = bucket.pattern
+        fairly = bucket.should_distribute_fairly
 
         # note the position of the default bucket for inserting the remaining queues at that location
-        if bucket_pattern == 'default'
+        if bucket_pattern == ['default']
           default_idx = result.size
           default_fairly = fairly
           next
@@ -76,8 +76,7 @@ module Qmore
 
         bucket_queues, remaining = [], []
 
-        patterns = bucket_pattern.split(',')
-        patterns.each do |pattern|
+        bucket_pattern.each do |pattern|
           pattern = pattern.strip
 
           if pattern =~ /^!/

@@ -1,4 +1,5 @@
 require "spec_helper"
+require 'reqless'
 
 describe "Qmore::LegacyConfiguration" do
   it "should always have a fallback pattern" do
@@ -25,12 +26,16 @@ describe "Qmore::LegacyConfiguration" do
 
   it "should load the latest priority buckets from persistence" do
     configuration = Qmore::LegacyConfiguration.new(Qmore.persistence)
+    expected_bucket = Reqless::QueuePriorityPattern.new(%w[foo], false)
     expected_configuration = Qmore::Configuration.new
-    expected_configuration.priority_buckets = [{'pattern' => 'foo', 'fairly' => 'false'}]
+    expected_configuration.priority_buckets = [expected_bucket]
 
     Qmore.persistence.write(expected_configuration)
 
-    configuration.priority_buckets.should == expected_configuration.priority_buckets
+    configuration.priority_buckets.should == [
+      expected_bucket,
+      Reqless::QueuePriorityPattern.new(%w[default], false),
+    ]
   end
 end
 
@@ -90,20 +95,28 @@ describe "Qmore::Configuration" do
   context "priority attributes" do
     it "should have a default priority" do
       configuration = Qmore::Configuration.new
-      configuration.priority_buckets.should == [{'pattern' => 'default'}]
+      configuration.priority_buckets.should == [
+        Reqless::QueuePriorityPattern.new(%w[default])
+      ]
     end
 
     it "can set priorities" do
-      expected_priority_buckets = [{'pattern' => 'foo', 'fairly' => 'false'},{'pattern' => 'default'}]
+      expected_priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[foo], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+      ]
+
       configuration = Qmore::Configuration.new
-      configuration.priority_buckets = [{'pattern' => 'foo', 'fairly' => 'false'}]
+      configuration.priority_buckets = [Reqless::QueuePriorityPattern.new(%w[foo], false)]
       configuration.priority_buckets.should == expected_priority_buckets
     end
 
     it "can set priorities including default" do
-      expected_priority_buckets = [{'pattern' => 'foo', 'fairly' => false},
-                                   {'pattern' => 'default', 'fairly' => false},
-                                   {'pattern' => 'bar', 'fairly' => true}]
+      expected_priority_buckets = [
+        Reqless::QueuePriorityPattern.new(%w[foo], false),
+        Reqless::QueuePriorityPattern.new(%w[default], false),
+        Reqless::QueuePriorityPattern.new(%w[bar], true),
+      ]
       configuration = Qmore::Configuration.new
       configuration.priority_buckets = expected_priority_buckets
       configuration.priority_buckets.should == expected_priority_buckets

@@ -1,5 +1,4 @@
 require 'logger'
-require 'multi_json'
 
 module Qmore::Persistence
   class Monitor
@@ -43,69 +42,46 @@ module Qmore::Persistence
     end
   end
 
-  class Redis
+  class Reqless
     DYNAMIC_QUEUE_KEY = "qmore:dynamic".freeze
     PRIORITY_KEY = "qmore:priority".freeze
 
-    attr_reader :redis
+    attr_reader :reqless
 
-    def initialize(redis)
-      @redis = redis
-    end
-
-    def decode(data)
-      MultiJson.load(data) if data
-    end
-
-    def encode(data)
-      MultiJson.dump(data)
+    def initialize(reqless)
+      @reqless = reqless
     end
 
     # Returns a Qmore::Configuration from the underlying data storage mechanism
     # @return [Qmore::Configuration]
     def load
       configuration = Qmore::Configuration.new
-      configuration.dynamic_queues = self.read_dynamic_queues
-      configuration.priority_buckets = self.read_priority_buckets
+      configuration.dynamic_queues = self.get_queue_identifier_patterns
+      configuration.priority_buckets = self.get_queue_priority_patterns
       configuration
     end
 
     # Writes out the configuration to the underlying data storage mechanism.
     # @param[Qmore::Configuration] configuration to be persisted
     def write(configuration)
-      write_dynamic_queues(configuration.dynamic_queues)
-      write_priority_buckets(configuration.priority_buckets)
+      set_queue_identifier_patterns(configuration.dynamic_queues)
+      set_queue_priority_patterns(configuration.priority_buckets)
     end
 
-    def read_dynamic_queues
-      result = {}
-      queues = redis.hgetall(DYNAMIC_QUEUE_KEY)
-      queues.each {|k, v| result[k] = decode(v) }
-      return result
+    def get_queue_identifier_patterns
+      reqless.queue_patterns.get_queue_identifier_patterns
     end
 
-    def read_priority_buckets
-      priorities = Array(redis.lrange(PRIORITY_KEY, 0, -1))
-      priorities = priorities.collect {|p| decode(p) }
-      return priorities
+    def get_queue_priority_patterns
+      reqless.queue_patterns.get_queue_priority_patterns
     end
 
-    def write_priority_buckets(data)
-      redis.multi do
-        redis.del(PRIORITY_KEY)
-        Array(data).each do |v|
-           redis.rpush(PRIORITY_KEY, encode(v))
-        end
-      end
+    def set_queue_priority_patterns(data)
+      reqless.queue_patterns.set_queue_priority_patterns(data)
     end
 
-    def write_dynamic_queues(dynamic_queues)
-      redis.multi do
-        redis.del(DYNAMIC_QUEUE_KEY)
-        dynamic_queues.each do |k, v|
-          redis.hset(DYNAMIC_QUEUE_KEY, k, encode(v))
-        end
-      end
+    def set_queue_identifier_patterns(dynamic_queues)
+      reqless.queue_patterns.set_queue_identifier_patterns(dynamic_queues)
     end
   end
 end

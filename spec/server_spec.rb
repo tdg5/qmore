@@ -5,6 +5,7 @@ require 'rack'
 require 'rack/test'
 require 'qmore-server'
 require 'orderedhash'
+require 'reqless'
 
 Sinatra::Base.set :environment, :test
 
@@ -131,8 +132,7 @@ describe "Qmore Server" do
       end
 
       it "should update queues" do
-        Qmore.configuration.dynamic_queues["key_two"] = ["bar", "baz"]
-        Qmore.persistence.write(Qmore.configuration)
+        Qmore.persistence.set_queue_identifier_patterns({"key_two" => ["bar", "baz"]})
 
         post "/dynamicqueues", {'queues' => [{'name' => "key_two", "value" => "foo,bar,baz"}]}
 
@@ -164,10 +164,12 @@ describe "Qmore Server" do
     context "show queue priority table" do
 
       before(:each) do
-        Qmore.configuration.priority_buckets = [{'pattern' => 'foo', 'fairly' => false},
-                                                {'pattern' => 'default', 'fairly' => false},
-                                                {'pattern' => 'bar', 'fairly' => true}]
-        Qmore.persistence.write(Qmore.configuration)
+        queue_priority_patterns = [
+          Reqless::QueuePriorityPattern.new(%w[foo], false),
+          Reqless::QueuePriorityPattern.new(%w[default], false),
+          Reqless::QueuePriorityPattern.new(%w[bar], true),
+        ]
+        Qmore.persistence.set_queue_priority_patterns(queue_priority_patterns)
       end
 
       it "should shows pattern input fields" do
@@ -191,10 +193,12 @@ describe "Qmore Server" do
     context "edit links" do
 
       before(:each) do
-        Qmore.configuration.priority_buckets = [{'pattern' => 'foo', 'fairly' => false},
-                                                {'pattern' => 'default', 'fairly' => false},
-                                                {'pattern' => 'bar', 'fairly' => true}]
-        Qmore.persistence.write(Qmore.configuration)
+        queue_priority_patterns = [
+          Reqless::QueuePriorityPattern.new(%w[foo], false),
+          Reqless::QueuePriorityPattern.new(%w[default], false),
+          Reqless::QueuePriorityPattern.new(%w[bar], true),
+        ]
+        Qmore.persistence.set_queue_priority_patterns(queue_priority_patterns)
       end
 
       it "should show remove link for queue" do
@@ -226,7 +230,9 @@ describe "Qmore Server" do
       end
 
       it "should update queues" do
-        Qmore.configuration.priority_buckets.should == [{'pattern' => 'default'}]
+        Qmore.configuration.priority_buckets.should == [
+          Reqless::QueuePriorityPattern.new(['default'], false),
+        ]
 
         params = {'priorities' => [
             OrderedHash["pattern", "foo"],
@@ -237,9 +243,13 @@ describe "Qmore Server" do
 
         last_response.should be_redirect
         last_response['Location'].should match /queuepriority/
-        Qmore.configuration.priority_buckets.should == [{"pattern" => "foo"},
-                                           {"pattern" => "default"},
-                                           {"pattern" => "bar", "fairly" => "true"}]
+        expected_patterns = [
+          Reqless::QueuePriorityPattern.new(%w[foo], false),
+          Reqless::QueuePriorityPattern.new(%w[default], false),
+          Reqless::QueuePriorityPattern.new(%w[bar], true),
+        ]
+        actual_patterns = Qmore.configuration.priority_buckets
+        actual_patterns.should == expected_patterns
       end
 
     end
